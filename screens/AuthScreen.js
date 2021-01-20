@@ -8,8 +8,8 @@ class AuthScreen extends Component {
     super(props)
   }
 
-  handleOnLoggedIn() {
-    this.props.onLoggedIn(true);
+  handleOnLoggedIn(data) {
+    this.props.onLoggedIn(data);
   }
 
   loginScreen = () => (

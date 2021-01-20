@@ -7,6 +7,8 @@ import SplashScreen from './screens/SplashScreen'
 import AuthScreen from './screens/AuthScreen'
 import HomeScreen from './screens/HomeScreen'
 
+import { getToken, getAuthUser } from './utils/auth'
+
 class App extends Component {
   _isMounted = false;
 
@@ -14,24 +16,49 @@ class App extends Component {
     super(props);
     this.state = {
       loading: true,
-      authenticated: false, 
+      authenticated: false,
+      token: null,
+      user: null 
     };
   }
 
-  authCheck() {
-    setInterval(() => {
-      if (this._isMounted) {
+  authCheck = async () => {
+    var authUser = null
+    var token = null
+    if (this._isMounted) {
+      token = await getToken()
+      if (token !== null) {
+        authUser = await getAuthUser(token)
+        this.setState({token: token})
+        if (authUser !== null) {
+          this.setState({user: authUser})
+          setTimeout(() => {
+            this.setState({authenticated: true})
+            this.setState({loading: false})
+          }, 3000)
+        } else {
+          this.setState({loading: false})
+        }
+      } else {
         this.setState({loading: false})
       }
-    }, 3000);
+    }
   }
 
-  handleOnLoggedIn() {
-    this.setState({authenticated: true})
+  handleOnLoggedIn({token, authUser}) {
+    this.setState({
+      authenticated: true,
+      token: token,
+      user: authUser
+    })
   }
 
   handleOnLoggedOut() {
-    this.setState({authenticated: false})
+    this.setState({
+      authenticated: false,
+      token: null,
+      user: null
+    })
   }
 
   componentDidMount() {
@@ -48,7 +75,11 @@ class App extends Component {
   )
 
   homeScreen = () => (
-    <HomeScreen onLoggedOut={this.handleOnLoggedOut.bind(this)} />
+    <HomeScreen
+      user={this.state.user}
+      token={this.state.token}
+      onLoggedOut={this.handleOnLoggedOut.bind(this)} 
+    />
   )
 
   render() {
